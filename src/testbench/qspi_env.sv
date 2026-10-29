@@ -10,7 +10,7 @@ class qspi_env extends uvm_env;
   spi_agent  spi_active_agent;
   spi_agent  spi_passive_agent;
 
-  qpsi_config  agent_config;
+  qpsi_config  agent_config; 
 
   function new(string name = "qspi_env", uvm_component parent);
     super.new(name, parent);
