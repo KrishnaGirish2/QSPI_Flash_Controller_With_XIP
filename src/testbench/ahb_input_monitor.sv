@@ -27,7 +27,8 @@ class ahb_input_monitor extends uvm_monitor;
 		end
 	endtask
 	virtual task collect_data();
-			@(ahb_vif.ahb_inp_mon_cb);								t.HRESETn=ahb_vif.ahb_inp_mon_cb.HRESETn;
+			@(ahb_vif.ahb_inp_mon_cb);								
+		    t.HRESETn=ahb_vif.ahb_inp_mon_cb.HRESETn;
 			t.HSEL=ahb_vif.ahb_inp_mon_cb.HSEL;
 			t.HTRANS=ahb_vif.ahb_inp_mon_cb.HTRANS;
 			t.HWRITE=ahb_vif.ahb_inp_mon_cb.HWRITE;
