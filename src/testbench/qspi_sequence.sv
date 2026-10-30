@@ -358,6 +358,35 @@ endclass
 //===============
 //APB READ
 //===========
+class apb_CONTROL_READ_sequence extends uvm_sequence #(seq_item);
+
+    `uvm_object_utils(apb_CONTROL_READ_sequence)
+
+    function new(string name="apb_CONTROL_READ_sequence");
+        super.new(name);
+    endfunction
+
+    task body();
+
+        req = seq_item::type_id::create("req");
+
+        start_item(req);
+
+        req.randomize(PWRITE,PADDR,PWDATA,PSTRB) with
+        {
+            PWRITE == 0;
+            PADDR  == 4;
+            PSTRB  == 4'b0000;
+            PWDATA == 0;
+        };
+
+        finish_item(req);
+
+    endtask
+
+endclass
+
+
 
 
 
