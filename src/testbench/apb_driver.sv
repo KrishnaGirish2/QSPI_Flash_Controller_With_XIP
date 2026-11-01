@@ -10,12 +10,13 @@ class apb_driver extends uvm_driver #(seq_item);
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
     if(!uvm_config_db#(qspi_config)::get(this, "", "m_cfg", m_cfg))
       `uvm_fatal(get_type_name(), "APB driver failed to get m_cfg")
 
     uvm_config_db#(bit)::set(null, "*", "apb_start", 0);
     uvm_config_db#(bit [16:0])::set(null, "*", "control", '0);
-    uvm_config_db#(bit [7:0])::set(null, "*", "dummy",  '0);
+    uvm_config_db#(bit [7:0])::set(null, "*", "dummy", '0);
     uvm_config_db#(bit [7:0])::set(null, "*", "length", '0);
   endfunction
 
@@ -25,8 +26,7 @@ class apb_driver extends uvm_driver #(seq_item);
   endfunction
 
   task run_phase(uvm_phase phase);
-    vif.apb_drv.PSEL    <= 1'b0;
-    vif.apb_drv.PENABLE <= 1'b0;
+
     forever begin
       seq_item_port.get_next_item(req);
       drive_apb(req);
@@ -35,32 +35,51 @@ class apb_driver extends uvm_driver #(seq_item);
   endtask
 
   task drive_apb(seq_item tr);
+
     if (tr.PWRITE) begin
       case (tr.PADDR[7:0])
         8'h04: begin
           uvm_config_db#(bit [16:0])::set(null, "*", "control", tr.PWDATA[16:0]);
+
           if (tr.PWDATA[0])
             uvm_config_db#(bit)::set(null, "*", "apb_start", 1);
         end
-        8'h14: uvm_config_db#(bit [7:0])::set(null, "*", "dummy",  tr.PWDATA[7:0]);
-        8'h18: uvm_config_db#(bit [7:0])::set(null, "*", "length", tr.PWDATA[7:0]);
+
+        8'h14:
+          uvm_config_db#(bit [7:0])::set(null, "*", "dummy", tr.PWDATA[7:0]);
+
+        8'h18:
+          uvm_config_db#(bit [7:0])::set(null, "*", "length", tr.PWDATA[7:0]);
       endcase
     end
 
-    @(vif.apb_drv);
-    vif.apb_drv.PSEL    <= 1'b1;
-    vif.apb_drv.PENABLE <= 1'b0;
-    vif.apb_drv.PWRITE  <= tr.PWRITE;
-    vif.apb_drv.PSTRB   <= tr.PWRITE ? tr.PSTRB : 4'b0000;
-    vif.apb_drv.PADDR   <= tr.PADDR;
-    vif.apb_drv.PWDATA  <= tr.PWDATA;
+    @(vif.apb_drv.apb_drv_cb);
+    vif.apb_drv.apb_drv_cb.PRESETn <= tr.PRESETn;
+    vif.apb_drv.apb_drv_cb.PSEL    <= 1'b0;
+    vif.apb_drv.apb_drv_cb.PENABLE <= 1'b0;
 
-    @(vif.apb_drv);
-    vif.apb_drv.PENABLE <= 1'b1;
-    do @(vif.apb_drv); while (vif.apb_drv.PREADY !== 1'b1);
+    @(vif.apb_drv.apb_drv_cb);
+    vif.apb_drv.apb_drv_cb.PSEL    <= 1;
+    vif.apb_drv.apb_drv_cb.PENABLE <= 1'b0;
+    vif.apb_drv.apb_drv_cb.PWRITE  <= tr.PWRITE;
+    vif.apb_drv.apb_drv_cb.PSTRB   <= tr.PWRITE ? tr.PSTRB : 4'b0000;
+    vif.apb_drv.apb_drv_cb.PADDR   <= tr.PADDR;
+    vif.apb_drv.apb_drv_cb.PWDATA  <= tr.PWDATA;
 
-    vif.apb_drv.PSEL    <= 1'b0;
-    vif.apb_drv.PENABLE <= 1'b0;
+    @(vif.apb_drv.apb_drv_cb);
+    vif.apb_drv.apb_drv_cb.PENABLE <= 1'b1;
+
+    do begin
+      @(vif.apb_drv.apb_drv_cb);
+    end while (vif.apb_drv.apb_drv_cb.PREADY !== 1'b1);
+
+    //vif.apb_drv.apb_drv_cb.PSEL    <= 1'b0;
+    //vif.apb_drv.apb_drv_cb.PENABLE <= 1'b0;
+   // vif.apb_drv.apb_drv_cb.PWRITE  <= 1'b0;
+    //vif.apb_drv.apb_drv_cb.PSTRB   <= '0;
+    //vif.apb_drv.apb_drv_cb.PADDR   <= '0;
+    //vif.apb_drv.apb_drv_cb.PWDATA  <= '0;
+
   endtask
 
 endclass
