@@ -25,8 +25,8 @@ class apb_driver extends uvm_driver #(seq_item);
   endfunction
 
   task run_phase(uvm_phase phase);
-    vif.apb_drv_cb.PSEL    <= 1'b0;
-    vif.apb_drv_cb.PENABLE <= 1'b0;
+    vif.apb_drv.PSEL    <= 1'b0;
+    vif.apb_drv.PENABLE <= 1'b0;
     forever begin
       seq_item_port.get_next_item(req);
       drive_apb(req);
@@ -47,20 +47,20 @@ class apb_driver extends uvm_driver #(seq_item);
       endcase
     end
 
-    @(vif.apb_drv_cb);
-    vif.apb_drv_cb.PSEL    <= 1'b1;
-    vif.apb_drv_cb.PENABLE <= 1'b0;
-    vif.apb_drv_cb.PWRITE  <= tr.PWRITE;
-    vif.apb_drv_cb.PSTRB   <= tr.PWRITE ? tr.PSTRB : 4'b0000;
-    vif.apb_drv_cb.PADDR   <= tr.PADDR;
-    vif.apb_drv_cb.PWDATA  <= tr.PWDATA;
+    @(vif.apb_drv);
+    vif.apb_drv.PSEL    <= 1'b1;
+    vif.apb_drv.PENABLE <= 1'b0;
+    vif.apb_drv.PWRITE  <= tr.PWRITE;
+    vif.apb_drv.PSTRB   <= tr.PWRITE ? tr.PSTRB : 4'b0000;
+    vif.apb_drv.PADDR   <= tr.PADDR;
+    vif.apb_drv.PWDATA  <= tr.PWDATA;
 
-    @(vif.apb_drv_cb);
-    vif.apb_drv_cb.PENABLE <= 1'b1;
-    do @(vif.apb_drv_cb); while (vif.apb_drv_cb.PREADY !== 1'b1);
+    @(vif.apb_drv);
+    vif.apb_drv.PENABLE <= 1'b1;
+    do @(vif.apb_drv); while (vif.apb_drv.PREADY !== 1'b1);
 
-    vif.apb_drv_cb.PSEL    <= 1'b0;
-    vif.apb_drv_cb.PENABLE <= 1'b0;
+    vif.apb_drv.PSEL    <= 1'b0;
+    vif.apb_drv.PENABLE <= 1'b0;
   endtask
 
 endclass
