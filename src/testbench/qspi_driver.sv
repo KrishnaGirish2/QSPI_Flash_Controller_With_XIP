@@ -78,9 +78,9 @@ class qspi_driver extends uvm_driver #(seq_item);
                 end
 
             if(is_read) begin
-                seq_item_port.get_next_item(req);
+                
                 drive_data(req);
-                seq_item_port.item_done();
+               
             end
             while(vif.qspi_drv_cb.spi_cs_n!=1'b1) @(vif.qspi_drv_cb);
             uvm_config_db#(bit)::set(this,"*","apb_start",0);
